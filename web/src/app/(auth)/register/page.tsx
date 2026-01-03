@@ -82,6 +82,7 @@ export default function RegisterPage() {
                             <input
                                 type="password"
                                 required
+                                autoComplete="new-password"
                                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all placeholder:text-gray-500 text-gray-900"
                                 placeholder="Senha (mín. 6 caracteres)"
                                 value={password}
