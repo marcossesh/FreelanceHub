@@ -34,7 +34,7 @@ export async function registerUser(formData: z.infer<typeof registerSchema>) {
       },
     })
 
-    return { success: "Usuário criado com sucesso!", userId: user.id }
+    return { success: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { error: error.issues[0].message }
