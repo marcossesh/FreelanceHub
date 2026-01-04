@@ -6,7 +6,6 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    //adapter: PrismaAdapter(prisma),
     providers: [
         Credentials({
             credentials: {
@@ -38,21 +37,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
+    session: { strategy: "jwt" },
     callbacks: {
+        // 1. Grava o ID do usuário no JWT quando o login acontece
         async jwt({ token, user }) {
-            // Quando o usuário faz login, o objeto 'user' está disponível
             if (user) {
-                token.role = user.role
+                token.id = user.id;
             }
-            return token
+            return token;
         },
+        // 2. Transfere o ID do JWT para a Sessão que a Server Action lê
         async session({ session, token }) {
-            // Passamos o role do token para a sessão
-            if (token.role && session.user) {
-                session.user.role = token.role as "FREELANCER" | "CLIENT"
+            if (session.user) {
+                session.user.id = token.id as string;
             }
-            return session
+            return session;
         },
     },
-})
+});
 

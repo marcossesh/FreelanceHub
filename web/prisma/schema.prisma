@@ -4,6 +4,18 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // A URL é omitida aqui pois é gerenciada pelo prisma.config.ts
+}
+
+enum Role {
+  FREELANCER
+  CLIENT
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
 }
 
 model User {
@@ -14,38 +26,36 @@ model User {
   role          Role      @default(FREELANCER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  projects      Project[]
+  
   clients       Client[]
-}
-
-enum Role {
-  FREELANCER
-  CLIENT
 }
 
 model Client {
   id        String    @id @default(cuid())
   name      String
-  email     String    @unique
+  email     String?
+  phone     String?
+  company   String?
   userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects  Project[]
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model Project {
   id          String        @id @default(cuid())
-  title       String
+  name        String
+  description String?
   status      ProjectStatus @default(PLANNING)
+  
   clientId    String
-  client      Client        @relation(fields: [clientId], references: [id])
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
   createdAt   DateTime      @default(now())
-}
+  updatedAt   DateTime      @updatedAt
 
-enum ProjectStatus {
-  PLANNING
-  IN_PROGRESS
-  COMPLETED
+  @@index([clientId])
 }
