@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { Mail, Phone, Building2 } from "lucide-react";
+import { DeleteButton } from "./delete-button";
+import { deleteClient } from "@/app/dashboard/clients/actions";
 
 export function ClientTable({ clients }: { clients: any[] }) {
     if (clients.length === 0) {
@@ -45,7 +48,13 @@ export function ClientTable({ clients }: { clients: any[] }) {
                                 </span>
                             </td>
                             <td className="px-6 py-4 text-right">
-                                <button className="text-gray-400 hover:text-gray-600 font-medium text-sm">Editar</button>
+                                <Link
+                                    href={`/dashboard/clients/${client.id}/edit`}
+                                    className="text-gray-400 hover:text-blue-600 font-medium text-sm transition-colors"
+                                >
+                                    Editar
+                                </Link>
+                                <DeleteButton id={client.id} itemName={client.name} action={deleteClient} label="Cliente" />
                             </td>
                         </tr>
                     ))}
