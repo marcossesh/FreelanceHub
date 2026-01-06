@@ -3,16 +3,18 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Plus, Briefcase, Calendar } from "lucide-react";
 
+
+import { ExportButton } from "@/components/dashboard/projects/export-button";
+
 export default async function ProjectsPage() {
     const session = await auth();
 
-    // Busca os projetos através dos clientes do usuário (Hierarquia Sênior que definimos)
     const projects = await prisma.project.findMany({
         where: {
             client: { userId: session?.user?.id }
         },
         include: {
-            client: { select: { name: true } } // Traz o nome do cliente vinculado
+            client: { select: { name: true } }
         },
         orderBy: { createdAt: "desc" }
     });
@@ -24,12 +26,15 @@ export default async function ProjectsPage() {
                     <h1 className="text-2xl font-bold text-gray-900">Projetos</h1>
                     <p className="text-gray-500 text-sm">Acompanhe o andamento dos seus trabalhos.</p>
                 </div>
-                <Link
-                    href="/dashboard/projects/new"
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
-                >
-                    <Plus size={18} /> Novo Projeto
-                </Link>
+                <div className="flex gap-3">
+                    <ExportButton projects={projects} />
+                    <Link
+                        href="/dashboard/projects/new"
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                    >
+                        <Plus size={18} /> Novo Projeto
+                    </Link>
+                </div>
             </div>
 
             {projects.length === 0 ? (
