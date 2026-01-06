@@ -40,16 +40,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session: { strategy: "jwt" },
     callbacks: {
         // 1. Grava o ID do usuário no JWT quando o login acontece
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
+        async jwt({ token, user, trigger, session }) {
+            // 1. No login inicial, salva o ID no token
+            if (user) token.id = user.id;
+
+            if (trigger === "update" && session?.name) {
+                token.name = session.name;
             }
+
             return token;
         },
-        // 2. Transfere o ID do JWT para a Sessão que a Server Action lê
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
+                session.user.name = token.name; // Garante que a sessão use o nome do token
             }
             return session;
         },
