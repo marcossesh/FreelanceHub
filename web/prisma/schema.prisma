@@ -36,6 +36,7 @@ model Client {
   email     String?
   phone     String?
   company   String?
+  document  String?
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects  Project[]

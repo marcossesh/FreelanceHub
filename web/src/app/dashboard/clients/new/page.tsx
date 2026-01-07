@@ -5,19 +5,23 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { createClient } from "../actions";
+import { useRouter } from "next/navigation";
 
 export default function NewClientPage() {
 
+    const router = useRouter();
     const [state, formAction, isPending] = useActionState(createClient, null);
 
-    // Escuta mudanças no estado retornado pela Server Action
     useEffect(() => {
         if (state?.success) {
             toast.success("Cliente cadastrado com sucesso!");
+            setTimeout(() => {
+                router.push("/dashboard/clients");
+            }, 1500);
         } else if (state?.error) {
             toast.error(state.error);
         }
-    }, [state]);
+    }, [state, router]);
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -47,6 +51,18 @@ export default function NewClientPage() {
                             className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 text-gray-900 placeholder:text-gray-500"
                         />
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">CPF ou CNPJ</label>
+                        <input
+                            name="document"
+                            type="text"
+                            minLength={11}
+                            placeholder="000.000.000-00"
+                            disabled={isPending}
+                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 text-black"
+                        />
+                    </div>
+
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Empresa</label>
                         <input

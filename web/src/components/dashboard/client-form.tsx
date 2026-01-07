@@ -14,6 +14,7 @@ interface ClientFormProps {
     initialData?: {
         id: string;
         name: string;
+        document?: string | null;
         company?: string | null;
         email?: string | null;
         phone?: string | null;
@@ -47,6 +48,18 @@ export function ClientForm({ initialData, action }: ClientFormProps) {
                         required
                         disabled={isPending}
                         className="w-full px-4 py-2 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:bg-gray-50 text-gray-900 placeholder:text-gray-500"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700">CPF ou CNPJ</label>
+                    <input
+                        name="document"
+                        defaultValue={initialData?.document || ""}
+                        type="text"
+                        minLength={11}
+                        placeholder="000.000.000-00"
+                        disabled={isPending}
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 text-black"
                     />
                 </div>
                 <div className="space-y-2">
