@@ -49,6 +49,7 @@ model Project {
   id          String        @id @default(cuid())
   name        String
   description String?
+  value       Float         @default(0)
   status      ProjectStatus @default(PLANNING)
   
   clientId    String

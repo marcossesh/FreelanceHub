@@ -14,9 +14,11 @@ export async function createProject(prevState: any, formData: FormData) {
     const clientId = formData.get("clientId") as string;
     const status = formData.get("status") as ProjectStatus;
 
+    const value = Number(formData.get("value") || 0);
+
     try {
         await prisma.project.create({
-            data: { name, description, status, clientId },
+            data: { name, description, status, clientId, value },
         });
 
         revalidatePath("/dashboard/projects");
@@ -28,17 +30,18 @@ export async function createProject(prevState: any, formData: FormData) {
 }
 
 export async function updateProject(prevState: any, formData: FormData) {
-    "use server";
     const id = formData.get("id") as string;
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const status = formData.get("status") as any;
     const clientId = formData.get("clientId") as string;
 
+    const value = Number(formData.get("value") || 0);
+
     try {
         await prisma.project.update({
             where: { id },
-            data: { name, description, status, clientId }
+            data: { name, description, status, clientId, value }
         });
         revalidatePath("/dashboard/projects");
         return { success: true };

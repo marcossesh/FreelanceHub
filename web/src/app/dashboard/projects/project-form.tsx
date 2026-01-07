@@ -42,6 +42,17 @@ export function ProjectForm({ clients, initialData, action }: ProjectFormProps) 
                     disabled={isPending}
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 text-black"
                 />
+                <input
+                    name="value"
+                    defaultValue={initialData?.value}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    disabled={isPending}
+                    placeholder="Valor a receber pelo projeto"
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 text-black"
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
