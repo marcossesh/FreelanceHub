@@ -4,6 +4,7 @@ import {
     Users,
     Briefcase,
     Settings,
+    Receipt,
     LogOut
 } from "lucide-react";
 import { SignOutButton } from "../auth/sign-out-button";
@@ -13,6 +14,7 @@ const menuItems = [
     { icon: Users, label: "Clientes", href: "/dashboard/clients" },
     { icon: Briefcase, label: "Projetos", href: "/dashboard/projects" },
     { icon: Settings, label: "Configurações", href: "/dashboard/settings" },
+    { icon: Receipt, label: "Faturas", href: "/dashboard/invoices" },
 ];
 
 export function Sidebar({ user }: { user: any }) {

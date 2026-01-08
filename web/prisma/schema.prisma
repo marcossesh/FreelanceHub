@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // A URL é omitida aqui pois é gerenciada pelo prisma.config.ts
+  // A URL é gerenciada pelo prisma.config.ts
 }
 
 enum Role {
@@ -16,6 +16,13 @@ enum ProjectStatus {
   PLANNING
   IN_PROGRESS
   COMPLETED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+  OVERDUE
 }
 
 model User {
@@ -56,8 +63,32 @@ model Project {
   clientId    String
   client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
+  // Relação: Um projeto pode ter várias faturas (ex: entrada + entrega)
+  invoices    Invoice[]
+  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   @@index([clientId])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique // Ex: INV-001
+  status          InvoiceStatus @default(PENDING)
+  totalAmount     Float
+  dueDate         DateTime
+  issuedAt        DateTime      @default(now())
+  notes           String?
+  
+  stripeInvoiceId String?       @unique
+  stripePaymentUrl String?      
+
+  projectId       String
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([projectId])
 }

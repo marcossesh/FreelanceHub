@@ -5,22 +5,28 @@ import { Users, Briefcase, Clock, CheckCircle } from "lucide-react";
 export default async function DashboardPage() {
     const session = await auth();
 
-    // Busca estatísticas em paralelo (Alta Performance)
-    const [clientCount, projectCount, activeProjects] = await Promise.all([
+    const [clientCount, projectCount, pendingInvoices] = await Promise.all([
         prisma.client.count({ where: { userId: session?.user?.id } }),
         prisma.project.count({ where: { client: { userId: session?.user?.id } } }),
-        prisma.project.count({
+        prisma.invoice.aggregate({
             where: {
-                client: { userId: session?.user?.id },
-                status: "IN_PROGRESS"
-            }
+                status: "PENDING",
+                project: { client: { userId: session?.user?.id } }
+            },
+            _sum: { totalAmount: true }
         }),
     ]);
 
     const stats = [
-        { label: "Total de Clientes", value: clientCount, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Total de Projetos", value: projectCount, icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50" },
-        { label: "Em Andamento", value: activeProjects, icon: Clock, color: "text-orange-600", bg: "bg-orange-50" },
+        { label: "Clientes", value: clientCount, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Projetos", value: projectCount, icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50" },
+        {
+            label: "A Receber",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pendingInvoices._sum.totalAmount || 0),
+            icon: CheckCircle,
+            color: "text-green-600",
+            bg: "bg-green-50"
+        },
     ];
 
     return (

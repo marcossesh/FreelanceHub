@@ -85,3 +85,42 @@ export async function getProjectsForExport() {
         return { error: "Falha ao buscar dados." };
     }
 }
+
+export async function createInvoice(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    const projectId = formData.get("projectId") as string;
+    const totalAmount = Number(formData.get("totalAmount") || 0);
+    const dueDate = new Date(formData.get("dueDate") as string);
+    const notes = formData.get("notes") as string;
+
+    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                client: { userId: session.user.id }
+            }
+        });
+
+        if (!project) return { error: "Projeto não encontrado." };
+
+        await prisma.invoice.create({
+            data: {
+                invoiceNumber,
+                totalAmount,
+                dueDate,
+                notes,
+                projectId,
+                status: "PENDING",
+            },
+        });
+
+        revalidatePath(`/dashboard/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Falha ao criar fatura." };
+    }
+}
