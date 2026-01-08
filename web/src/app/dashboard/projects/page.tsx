@@ -43,6 +43,7 @@ export default async function ProjectsPage() {
     ];
 
     return (
+
         <div className="space-y-8">
             {/* Cabeçalho */}
             <div className="flex items-center justify-between">

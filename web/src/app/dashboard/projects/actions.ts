@@ -70,3 +70,18 @@ export async function deleteProject(id: string) {
     }
 }
 
+export async function getProjectsForExport() {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    try {
+        const projects = await prisma.project.findMany({
+            where: { client: { userId: session.user.id } },
+            include: { client: { select: { name: true } } },
+            orderBy: { createdAt: "desc" }
+        });
+        return { success: true, data: projects };
+    } catch (error) {
+        return { error: "Falha ao buscar dados." };
+    }
+}
