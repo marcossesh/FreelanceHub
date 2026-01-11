@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ProjectStatus } from "@prisma/client";
+import { stripe } from "@/lib/stripe";
 
 export async function createProject(prevState: any, formData: FormData) {
     const session = await auth();
@@ -88,39 +89,87 @@ export async function getProjectsForExport() {
 
 export async function createInvoice(prevState: any, formData: FormData) {
     const session = await auth();
+    let stripeCustomer;
+
     if (!session?.user?.id) return { error: "Não autorizado" };
 
     const projectId = formData.get("projectId") as string;
-    const totalAmount = Number(formData.get("totalAmount") || 0);
-    const dueDate = new Date(formData.get("dueDate") as string);
-    const notes = formData.get("notes") as string;
+    const rawAmount = formData.get("totalAmount") as string;
 
-    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+    // Remove tudo que não for número, vírgula ou ponto, depois troca vírgula por ponto
+    const sanitizedAmount = rawAmount.replace(/[^\d,.]/g, '').replace(',', '.');
+    const totalAmount = Number(sanitizedAmount) || 0;
+    const dueDate = new Date(formData.get("dueDate") as string);
+
+    dueDate.setHours(23, 59, 59, 999);
+
+    const now = new Date();
+    if (dueDate <= now) {
+        // Se a data ainda assim for hoje ou passado, jogamos para daqui a 24h
+        dueDate.setDate(now.getDate() + 1);
+    }
+    const notes = formData.get("notes") as string;
 
     try {
         const project = await prisma.project.findFirst({
-            where: {
-                id: projectId,
-                client: { userId: session.user.id }
-            }
+            where: { id: projectId, client: { userId: session.user.id } },
+            include: { client: true }
         });
 
         if (!project) return { error: "Projeto não encontrado." };
+        if (!project.client.email) {
+            return { error: "O cliente vinculado a este projeto precisa de um e-mail cadastrado para gerar faturas." };
+        }
+
+        const existingCustomers = await stripe.customers.list({
+            email: project.client.email,
+            limit: 1
+        });
+
+        if (existingCustomers.data.length > 0) {
+            stripeCustomer = existingCustomers.data[0];
+        } else {
+            stripeCustomer = await stripe.customers.create({
+                email: project.client.email,
+                name: project.client.name,
+            });
+        }
+
+        await stripe.invoiceItems.create({
+            customer: stripeCustomer.id,
+            amount: Math.round(totalAmount * 100), // Stripe usa centavos (BRL 10.00 = 1000)
+            currency: 'brl',
+            description: `Fatura para o projeto: ${project.name}`,
+        });
+
+        const stripeInvoice = await stripe.invoices.create({
+            customer: stripeCustomer.id,
+            collection_method: 'send_invoice',
+            due_date: Math.floor(dueDate.getTime() / 1000), // Stripe usa Unix Timestamp
+            description: notes || `Fatura para o projeto: ${project.name}`,
+        });
+
+        const finalizedInvoice = await stripe.invoices.finalizeInvoice(stripeInvoice.id);
 
         await prisma.invoice.create({
             data: {
-                invoiceNumber,
+                invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
                 totalAmount,
                 dueDate,
                 notes,
                 projectId,
                 status: "PENDING",
+                stripeInvoiceId: finalizedInvoice.id,
+                stripePaymentUrl: finalizedInvoice.hosted_invoice_url, // URL para o cliente pagar
             },
         });
 
         revalidatePath(`/dashboard/projects/${projectId}`);
+        revalidatePath("/dashboard/invoices");
         return { success: true };
-    } catch (error) {
-        return { error: "Falha ao criar fatura." };
+
+    } catch (error: any) {
+        console.error("Erro no Stripe/Prisma:", error);
+        return { error: error.message || "Falha ao processar faturamento." };
     }
 }

@@ -37,6 +37,7 @@ export function InvoiceList({ invoices }: { invoices: InvoiceWithProject[] }) {
                             <th className="px-6 py-4 font-bold text-gray-400 uppercase text-[10px]">Vencimento</th>
                             <th className="px-6 py-4 font-bold text-gray-400 uppercase text-[10px]">Valor</th>
                             <th className="px-6 py-4 font-bold text-gray-400 uppercase text-[10px]">Status</th>
+                            <th className="px-6 py-4 font-bold text-gray-400 uppercase text-[10px] text-right">Ação</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -69,6 +70,20 @@ export function InvoiceList({ invoices }: { invoices: InvoiceWithProject[] }) {
                                             invoice.status === 'PAID' ? 'Pago' :
                                                 invoice.status === 'CANCELLED' ? 'Cancelado' : 'Atrasado'}
                                     </span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    {invoice.stripePaymentUrl ? (
+                                        <a
+                                            href={invoice.stripePaymentUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors text-xs font-bold"
+                                        >
+                                            Ver Fatura
+                                        </a>
+                                    ) : (
+                                        <span className="text-gray-400 text-xs italic">Link indisponível</span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
