@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, FileText, Table, Download, Check } from "lucide-react";
 import { downloadProjectsPDF } from "@/utils/export-pdf";
 import { toast } from "sonner";
+import { getProjectsForExport } from "@/app/dashboard/projects/export-action";
 
 interface ExportButtonProps {
     projects: any[];
@@ -13,15 +14,17 @@ const AVAILABLE_FIELDS = [
     { id: "name", label: "Projeto" },
     { id: "client", label: "Cliente" },
     { id: "status", label: "Status" },
-    { id: "value", label: "Valor" },
+    { id: "value", label: "Total Contrato" },
+    { id: "paid", label: "Pago" },
+    { id: "pending", label: "Pendente" },
     { id: "description", label: "Descrição" },
     { id: "createdAt", label: "Data" },
 ];
 
+
 export function ExportButton({ projects }: ExportButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedFields, setSelectedFields] = useState(["name", "client", "status", "value"]);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [selectedFields, setSelectedFields] = useState(["name", "client", "paid", "pending"]); const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -43,7 +46,6 @@ export function ExportButton({ projects }: ExportButtonProps) {
         if (projects.length === 0) return toast.error("Sem dados para exportar");
         if (selectedFields.length === 0) return toast.error("Selecione ao menos um campo");
 
-        // Headers dinâmicos baseados na seleção
         const activeHeaders = AVAILABLE_FIELDS.filter(f => selectedFields.includes(f.id));
         const headerRow = activeHeaders.map(h => h.label).join(",") + "\n";
 
@@ -65,15 +67,18 @@ export function ExportButton({ projects }: ExportButtonProps) {
         toast.success("CSV gerado com sucesso!");
     };
 
-    const handleExportPDF = () => {
-        if (projects.length === 0) return toast.error("Sem dados para exportar");
+    const handleExportPDF = async () => {
         if (selectedFields.length === 0) return toast.error("Selecione ao menos um campo");
-        try {
 
-            downloadProjectsPDF(projects, selectedFields);
-            toast.success("PDF gerado com sucesso!");
+        const toastId = toast.loading("Gerando PDF...");
+        try {
+            const data = await getProjectsForExport();
+
+            downloadProjectsPDF(data, selectedFields);
+
+            toast.success("PDF gerado com sucesso!", { id: toastId });
         } catch (error) {
-            toast.error("Erro ao gerar PDF");
+            toast.error("Erro ao buscar dados para o PDF", { id: toastId });
         }
     };
 

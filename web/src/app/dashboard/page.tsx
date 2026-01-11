@@ -1,31 +1,47 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Users, Briefcase, Clock, CheckCircle } from "lucide-react";
+import { Users, Briefcase, TrendingUp, Clock, CheckCircle } from "lucide-react";
 
 export default async function DashboardPage() {
     const session = await auth();
+    const userId = session?.user?.id;
 
-    const [clientCount, projectCount, pendingInvoices] = await Promise.all([
-        prisma.client.count({ where: { userId: session?.user?.id } }),
-        prisma.project.count({ where: { client: { userId: session?.user?.id } } }),
-        prisma.invoice.aggregate({
+    const [clientCount, projectCount, invoiceStats] = await Promise.all([
+        prisma.client.count({ where: { userId } }),
+        prisma.project.count({ where: { client: { userId } } }),
+        prisma.invoice.groupBy({
+            by: ['status'],
             where: {
-                status: "PENDING",
-                project: { client: { userId: session?.user?.id } }
+                project: { client: { userId } }
             },
             _sum: { totalAmount: true }
         }),
     ]);
 
+    const paidAmount = invoiceStats.find(s => s.status === 'PAID')?._sum.totalAmount || 0;
+    const pendingAmount = invoiceStats.find(s => s.status === 'PENDING')?._sum.totalAmount || 0;
+
     const stats = [
-        { label: "Clientes", value: clientCount, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Projetos", value: projectCount, icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50" },
         {
-            label: "A Receber",
-            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pendingInvoices._sum.totalAmount || 0),
-            icon: CheckCircle,
+            label: "Ganhos Reais",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paidAmount),
+            icon: TrendingUp,
             color: "text-green-600",
             bg: "bg-green-50"
+        },
+        {
+            label: "A Receber",
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pendingAmount),
+            icon: Clock,
+            color: "text-blue-600",
+            bg: "bg-blue-50"
+        },
+        {
+            label: "Total de Projetos",
+            value: projectCount,
+            icon: Briefcase,
+            color: "text-purple-600",
+            bg: "bg-purple-50"
         },
     ];
 
@@ -33,12 +49,12 @@ export default async function DashboardPage() {
         <div className="space-y-8">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-500 text-sm">Olá, {session?.user?.name}. Aqui está o resumo do seu trabalho.</p>
+                <p className="text-gray-500 text-sm">Olá, {session?.user?.name}. Aqui está o resumo do seu faturamento real.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div key={stat.label} className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                         <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
                             <stat.icon size={24} />
                         </div>
@@ -50,15 +66,13 @@ export default async function DashboardPage() {
                 ))}
             </div>
 
-            {/* Espaço para um futuro gráfico ou lista de projetos recentes */}
+            {/* Lista de faturas recentes ou tarefas poderia entrar aqui */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-4 text-lg">Próximos Passos</h3>
-                <ul className="space-y-3">
-                    <li className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                        <CheckCircle size={18} className="text-green-500" />
-                        <span>Continue cadastrando seus clientes para ter um histórico completo.</span>
-                    </li>
-                </ul>
+                <div className="flex items-center gap-3 text-sm text-gray-600 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                    <CheckCircle size={18} className="text-blue-500" />
+                    <span>Seu sistema de faturamento automático está ativo. Acompanhe os pagamentos em tempo real.</span>
+                </div>
             </div>
         </div>
     );

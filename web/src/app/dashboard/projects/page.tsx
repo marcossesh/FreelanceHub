@@ -16,7 +16,8 @@ export default async function ProjectsPage() {
             client: { userId: session.user.id }
         },
         include: {
-            client: { select: { name: true } }
+            client: { select: { name: true } },
+            invoices: true
         },
         orderBy: { createdAt: "desc" }
     });
@@ -27,29 +28,31 @@ export default async function ProjectsPage() {
         { name: "Finalizados", value: projects.filter(p => p.status === "COMPLETED").length },
     ].filter(d => d.value > 0);
 
+    const allInvoices = projects.flatMap(p => p.invoices);
+
     const revenueData = [
         {
-            name: "Em Aberto",
-            total: projects
-                .filter(p => p.status !== "COMPLETED")
-                .reduce((acc, p) => acc + (p.value || 0), 0)
+            name: "Recebido",
+            total: allInvoices
+                .filter(inv => inv.status === "PAID")
+                .reduce((acc, inv) => acc + (inv.totalAmount || 0), 0)
         },
         {
-            name: "Faturado",
-            total: projects
-                .filter(p => p.status === "COMPLETED")
-                .reduce((acc, p) => acc + (p.value || 0), 0)
+            name: "Pendente",
+            total: allInvoices
+                .filter(inv => inv.status === "PENDING" || inv.status === "OVERDUE")
+                .reduce((acc, inv) => acc + (inv.totalAmount || 0), 0)
         },
     ];
 
     return (
 
         <div className="space-y-8">
-            {/* Cabeçalho */}
+            {/* Cabeçalho e Botões */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Projetos</h1>
-                    <p className="text-gray-500 text-sm">Acompanhe o andamento dos seus trabalhos.</p>
+                    <p className="text-gray-500 text-sm">Acompanhe o progresso e o faturamento real.</p>
                 </div>
                 <div className="flex gap-3">
                     <ExportButton projects={projects} />
