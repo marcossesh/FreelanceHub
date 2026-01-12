@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { UserPlus, Mail, Lock, User, Loader2 } from "lucide-react"
 import { registerUser } from "@/app/actions/register"
+import { SocialButtons } from "@/components/auth/social-buttons"
 
 export default function RegisterPage() {
     const [name, setName] = useState("")
@@ -35,17 +36,30 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
             <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center">
                     <div className="flex justify-center">
                         <UserPlus className="h-12 w-12 text-blue-600" />
                     </div>
                     <h2 className="mt-4 text-3xl font-extrabold text-gray-900">Crie sua conta</h2>
-                    <p className="mt-2 text-sm text-gray-600">Comece a gerenciar seus projetos hoje</p>
+                    <p className="mt-2 text-sm text-gray-600">Escolha como prefere começar</p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <div className="mt-8 space-y-4">
+                    <SocialButtons mode="register" />
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-200"></span>
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-gray-500">Ou use seu e-mail</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form className="mt-4 space-y-6" onSubmit={handleSubmit}>
                     {error && (
                         <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-200">
                             {error}
@@ -94,9 +108,9 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all disabled:opacity-50"
                     >
-                        {loading ? <Loader2 className="animate-spin h-5 w-5" /> : "Criar conta"}
+                        {loading ? <Loader2 className="animate-spin h-5 w-5" /> : "Criar conta manualmente"}
                     </button>
                 </form>
 

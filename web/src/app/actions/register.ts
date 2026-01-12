@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 
+
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("E-mail inválido"),
@@ -17,15 +18,23 @@ export async function registerUser(formData: z.infer<typeof registerSchema>) {
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      include: { accounts: true }
     })
 
     if (existingUser) {
+      // Se o usuário existe mas NÃO tem senha, ele veio do Google/GitHub
+      if (!existingUser.password && existingUser.accounts.length > 0) {
+        return {
+          error: "Esta conta foi criada via Google/GitHub. Por favor, faça login usando o provedor social."
+        }
+      }
+
       return { error: "Este e-mail já está cadastrado." }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name,
         email,
