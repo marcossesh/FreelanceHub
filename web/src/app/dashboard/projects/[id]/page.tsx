@@ -1,24 +1,42 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User, Briefcase, Tag } from "lucide-react";
 import { DeleteButton } from "@/components/dashboard/delete-button";
 import { deleteProject } from "@/app/dashboard/projects/actions";
+import { ChatBox } from "@/components/chat/chat-box"
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const session = await auth();
 
+    if (!session?.user?.id) {
+        redirect("/login");
+    }
+
     const project = await prisma.project.findUnique({
         where: { id },
         include: {
-            client: true
+            client: true,
+            messages: {
+                orderBy: { createdAt: "asc" },
+                take: 50,
+                include: {
+                    user: { select: { name: true } }
+                }
+            }
         }
     });
 
-    if (!project || project.client.userId !== session?.user?.id) {
+    if (!project) {
         notFound();
+    }
+
+    const isOwner = project.client.userId === session.user.id;
+
+    if (!isOwner) {
+        redirect("/dashboard");
     }
 
     return (
@@ -86,6 +104,15 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                                 className="block w-full py-2 bg-gray-900 text-white rounded-lg text-sm font-bold text-center hover:bg-black transition-colors"
                             >Editar Projeto</Link>
                             <DeleteButton id={project.id} itemName={project.name} action={deleteProject} label="Projeto" redirectTo="/dashboard/projects" />
+                        </div>
+                        <div>
+                            <h2 className="mt-8 mb-2 text-lg font-bold text-gray-900">Chat do projeto</h2>
+                            <ChatBox projectId={project.id} initialMessages={project.messages.map(m => ({
+                                id: m.id,
+                                text: m.text,
+                                userName: m.user?.name ?? "Usuário",
+                                createdAt: m.createdAt.toISOString()
+                            }))} />
                         </div>
                     </div>
                 </div>

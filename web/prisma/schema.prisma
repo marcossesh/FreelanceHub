@@ -39,7 +39,7 @@ model User {
   // Relacionamentos Auth.js
   accounts      Account[]
   sessions      Session[]
-
+  messages      Message[]
   clients       Client[]
 }
 
@@ -74,7 +74,7 @@ model Project {
   
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-
+  messages    Message[]
   @@index([clientId])
 }
 
@@ -124,4 +124,16 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
 }
