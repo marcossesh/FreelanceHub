@@ -2,9 +2,9 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
-const COLORS = ["#3b82f6", "#f59e0b", "#10b981"];
 
-export function StatusPieChart({ data }: { data: { name: string; value: number }[] }) {
+
+export function StatusPieChart({ data }: { data: { name: string; value: number; fill: string }[] }) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-[300px] flex flex-col">
             <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Distribuição de Status</h3>
@@ -12,7 +12,9 @@ export function StatusPieChart({ data }: { data: { name: string; value: number }
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie data={data} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
                         </Pie>
                         <Tooltip contentStyle={{ borderRadius: "10px", border: "none" }} />
                         <Legend />

@@ -39,9 +39,17 @@ export async function updateProject(prevState: any, formData: FormData) {
 
     const value = Number(formData.get("value") || 0);
 
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
     try {
         await prisma.project.update({
-            where: { id },
+            where: {
+                id,
+                client: {
+                    userId: session.user.id
+                }
+            },
             data: { name, description, status, clientId, value }
         });
         revalidatePath("/dashboard/projects");
@@ -98,7 +106,8 @@ export async function createInvoice(prevState: any, formData: FormData) {
 
     // Remove tudo que não for número, vírgula ou ponto, depois troca vírgula por ponto
     const sanitizedAmount = rawAmount.replace(/[^\d,.]/g, '').replace(',', '.');
-    const totalAmount = Number(sanitizedAmount) || 0;
+    // Converta para centavos ANTES de qualquer conta matemática para evitar flutuação
+    const amountInCents = Math.round((Number(sanitizedAmount) || 0) * 100);
     const dueDate = new Date(formData.get("dueDate") as string);
 
     dueDate.setHours(23, 59, 59, 999);
@@ -137,7 +146,7 @@ export async function createInvoice(prevState: any, formData: FormData) {
 
         await stripe.invoiceItems.create({
             customer: stripeCustomer.id,
-            amount: Math.round(totalAmount * 100), // Stripe usa centavos (BRL 10.00 = 1000)
+            amount: amountInCents, // Use o valor inteiro calculado
             currency: 'brl',
             description: `Fatura para o projeto: ${project.name}`,
         });
@@ -154,7 +163,7 @@ export async function createInvoice(prevState: any, formData: FormData) {
         await prisma.invoice.create({
             data: {
                 invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
-                totalAmount,
+                totalAmount: amountInCents / 100,
                 dueDate,
                 notes,
                 projectId,

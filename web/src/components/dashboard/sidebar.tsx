@@ -29,7 +29,7 @@ export function Sidebar({ user }: { user: any }) {
                     <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-4 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all"
                     >
                         <item.icon size={20} />
                         <span className="font-medium">{item.label}</span>
@@ -37,7 +37,7 @@ export function Sidebar({ user }: { user: any }) {
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-gray-100">
+            <div className="p-4 pb-8 border-t border-gray-100">
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
                         {user?.name?.[0] || "U"}

@@ -69,8 +69,8 @@ export default async function DashboardPage() {
             {/* Lista de faturas recentes ou tarefas poderia entrar aqui */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-4 text-lg">Próximos Passos</h3>
-                <div className="flex items-center gap-3 text-sm text-gray-600 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
-                    <CheckCircle size={18} className="text-blue-500" />
+                <div className="flex items-center gap-3 text-sm text-gray-500 bg-white p-4 rounded-lg border border-gray-200">
+                    <CheckCircle size={18} className="text-gray-400" />
                     <span>Seu sistema de faturamento automático está ativo. Acompanhe os pagamentos em tempo real.</span>
                 </div>
             </div>

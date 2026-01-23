@@ -1,8 +1,8 @@
 // web/src/hooks/useProjectChannel.ts
 "use client"
 
-import { useEffect } from "react"
 import { pusherClient } from "@/lib/pusher"
+import { useEffect, useRef } from "react"
 
 type MessageEvent = {
     id: string
@@ -17,12 +17,20 @@ export function useProjectChannel(
     projectId: string,
     onMessage: (message: MessageEvent) => void,
 ) {
+    const onMessageRef = useRef(onMessage);
+
+    useEffect(() => {
+        onMessageRef.current = onMessage;
+    }, [onMessage]);
+
     useEffect(() => {
         const channelName = `project-${projectId}`
         const channel = pusherClient.subscribe(channelName)
 
         const handler = (data: MessageEvent) => {
-            onMessage(data)
+            if (onMessageRef.current) {
+                onMessageRef.current(data);
+            }
         }
 
         channel.bind("new-message", handler)
@@ -31,5 +39,5 @@ export function useProjectChannel(
             channel.unbind("new-message", handler)
             pusherClient.unsubscribe(channelName)
         }
-    }, [projectId, onMessage])
+    }, [projectId])
 }

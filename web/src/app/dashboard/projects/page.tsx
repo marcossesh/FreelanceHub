@@ -23,9 +23,9 @@ export default async function ProjectsPage() {
     });
 
     const statusData = [
-        { name: "Planejamento", value: projects.filter(p => p.status === "PLANNING").length },
-        { name: "Em Progresso", value: projects.filter(p => p.status === "IN_PROGRESS").length },
-        { name: "Finalizados", value: projects.filter(p => p.status === "COMPLETED").length },
+        { name: "Planejamento", value: projects.filter(p => p.status === "PLANNING").length, fill: "#9ca3af" },
+        { name: "Em Progresso", value: projects.filter(p => p.status === "IN_PROGRESS").length, fill: "#2563eb" },
+        { name: "Finalizados", value: projects.filter(p => p.status === "COMPLETED").length, fill: "#16a34a" },
     ].filter(d => d.value > 0);
 
     const allInvoices = projects.flatMap(p => p.invoices);
