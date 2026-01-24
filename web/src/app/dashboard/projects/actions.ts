@@ -182,3 +182,107 @@ export async function createInvoice(prevState: any, formData: FormData) {
         return { error: error.message || "Falha ao processar faturamento." };
     }
 }
+
+export async function addProjectStep(projectId: string, title: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    try {
+        // Verifica se o projeto pertence ao usuário
+        const project = await prisma.project.findFirst({
+            where: { id: projectId, client: { userId: session.user.id } }
+        });
+
+        if (!project) return { error: "Projeto não encontrado" };
+
+        await prisma.projectStep.create({
+            data: {
+                title,
+                projectId,
+                isCompleted: false
+            }
+        });
+
+        revalidatePath(`/dashboard/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Erro ao criar etapa." };
+    }
+}
+
+export async function toggleStepStatus(stepId: string, isCompleted: boolean) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    try {
+        const step = await prisma.projectStep.findUnique({
+            where: { id: stepId },
+            include: { project: { include: { client: true } } }
+        });
+
+        if (!step || step.project.client.userId !== session.user.id) {
+            return { error: "Não autorizado ou etapa não encontrada" };
+        }
+
+        await prisma.projectStep.update({
+            where: { id: stepId },
+            data: {
+                isCompleted,
+                completedAt: isCompleted ? new Date() : null
+            }
+        });
+
+        revalidatePath(`/dashboard/projects/${step.projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Erro ao atualizar etapa." };
+    }
+}
+
+export async function generateShareLink(projectId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    try {
+        const shareToken = crypto.randomUUID();
+
+        await prisma.project.update({
+            where: {
+                id: projectId,
+                client: { userId: session.user.id }
+            },
+            data: { shareToken }
+        });
+
+        revalidatePath(`/dashboard/projects/${projectId}`);
+
+        return { success: true, token: shareToken };
+    } catch (error) {
+        return { error: "Erro ao gerar link." };
+    }
+}
+
+export async function deleteProjectStep(stepId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
+
+    try {
+        const step = await prisma.projectStep.findUnique({
+            where: { id: stepId },
+            include: { project: { include: { client: true } } }
+        });
+
+        if (!step || step.project.client.userId !== session.user.id) {
+            return { error: "Não autorizado" };
+        }
+
+        await prisma.projectStep.delete({
+            where: { id: stepId }
+        });
+
+        revalidatePath(`/dashboard/projects/${step.projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Erro ao excluir etapa." };
+    }
+}

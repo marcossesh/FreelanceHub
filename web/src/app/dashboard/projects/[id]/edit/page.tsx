@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { InvoiceModal } from "@/app/dashboard/projects/[id]/invoice-modal";
 import { InvoiceList } from "@/app/dashboard/projects/invoice-list";
 
+import { ShareLink } from "@/app/dashboard/projects/share-link";
+
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const session = await auth();
@@ -27,7 +29,13 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 
     return (
         <div className="max-w-2xl mx-auto space-y-6 pb-20"> {/* pb-20 para não colar no final */}
-            <h1 className="text-2xl font-bold text-black">Editar Projeto</h1>
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-black">Editar Projeto</h1>
+            </div>
+
+            {/* Componente de Compartilhamento */}
+            <ShareLink projectId={project.id} initialToken={project.shareToken} />
+
             <ProjectForm initialData={project} clients={clients} action={updateProject} />
 
             <div className="pt-8 border-t border-gray-100">
