@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, User, Briefcase, Tag } from "lucide-react";
 import { DeleteButton } from "@/components/dashboard/delete-button";
 import { deleteProject } from "@/app/dashboard/projects/actions";
-import { ChatBox } from "@/components/chat/chat-box"
+import { ChatSheet } from "@/components/chat/chat-sheet";
 import { ProjectSteps } from "@/app/dashboard/projects/project-steps";
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -105,21 +105,30 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                                 </div>
                             </div>
 
-                            <div className="pt-4">
+                            <div className="pt-4 flex items-center gap-2">
                                 <Link
                                     href={`/dashboard/projects/${project.id}/edit`}
-                                    className="block w-full py-2 bg-gray-900 text-white rounded-lg text-sm font-bold text-center hover:bg-black transition-colors"
+                                    className="flex-1 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold text-center hover:bg-black transition-colors"
                                 >Editar Projeto</Link>
                                 <DeleteButton id={project.id} itemName={project.name} action={deleteProject} label="Projeto" redirectTo="/dashboard/projects" />
                             </div>
-                            <div>
-                                <h2 className="mt-8 mb-2 text-lg font-bold text-gray-900">Chat do projeto</h2>
-                                <ChatBox projectId={project.id} initialMessages={project.messages.map(m => ({
-                                    id: m.id,
-                                    text: m.text,
-                                    userName: m.user?.name ?? "Usuário",
-                                    createdAt: m.createdAt.toISOString()
-                                }))} />
+
+                            <div className="space-y-3 pt-6 border-t border-gray-100">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Comunicação</h3>
+
+                                <ChatSheet
+                                    projectId={project.id}
+                                    initialMessages={project.messages.map(m => ({
+                                        id: m.id,
+                                        text: m.text,
+                                        userName: m.user?.name ?? "Usuário",
+                                        createdAt: m.createdAt.toISOString()
+                                    }))}
+                                />
+
+                                <p className="text-[10px] text-gray-400 text-center">
+                                    As mensagens são enviadas em tempo real para o cliente.
+                                </p>
                             </div>
                         </div>
                     </div>

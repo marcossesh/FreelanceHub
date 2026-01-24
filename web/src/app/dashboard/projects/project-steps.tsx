@@ -32,7 +32,10 @@ export function ProjectSteps({ steps, projectId, canEdit = true }: { steps: Step
             {/* Lista de Etapas */}
             <ul className="space-y-2">
                 {steps.map((step) => (
-                    <li key={step.id} className="group flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 transition-all">
+                    <li key={step.id} className={`group flex items-center justify-between p-3 rounded-lg border transition-all ${step.isCompleted
+                            ? "bg-gray-50 border-gray-100" // Concluído fica apagadinho
+                            : "bg-white border-gray-200 shadow-sm" // Pendente fica branco e destacado
+                        }`}>
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => toggleStepStatus(step.id, !step.isCompleted)}
@@ -58,26 +61,26 @@ export function ProjectSteps({ steps, projectId, canEdit = true }: { steps: Step
                 ))}
 
                 {steps.length === 0 && (
-                    <li className="text-sm text-gray-400 italic">Nenhuma etapa definida ainda.</li>
+                    <li className="text-sm text-gray-400 italic py-2">Nenhuma etapa definida ainda.</li>
                 )}
             </ul>
 
             {/* Adicionar Nova Etapa */}
             {canEdit && (
-                <form onSubmit={handleAdd} className="flex gap-2 mt-4">
+                <form onSubmit={handleAdd} className="flex gap-3 mt-4">
                     <input
                         type="text"
                         value={newStep}
                         onChange={(e) => setNewStep(e.target.value)}
                         placeholder="Adicionar nova etapa..."
-                        className="flex-1 text-sm px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 text-sm px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
                     />
                     <button
                         type="submit"
                         disabled={isAdding || !newStep.trim()}
-                        className="px-3 py-2 bg-gray-900 text-white rounded-lg hover:bg-black disabled:opacity-50 transition-colors"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors shadow-sm font-medium flex items-center"
                     >
-                        <Plus size={18} />
+                        <Plus size={20} />
                     </button>
                 </form>
             )}
