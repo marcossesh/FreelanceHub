@@ -169,7 +169,7 @@ export async function createInvoice(prevState: any, formData: FormData) {
                 projectId,
                 status: "PENDING",
                 stripeInvoiceId: finalizedInvoice.id,
-                stripePaymentUrl: finalizedInvoice.hosted_invoice_url, // URL para o cliente pagar
+                stripePaymentUrl: finalizedInvoice.hosted_invoice_url,
             },
         });
 
@@ -183,12 +183,11 @@ export async function createInvoice(prevState: any, formData: FormData) {
     }
 }
 
-export async function addProjectStep(projectId: string, title: string) {
+export async function addProjectStep(projectId: string, title: string, description?: string, attachmentUrl?: string) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Não autorizado" };
 
     try {
-        // Verifica se o projeto pertence ao usuário
         const project = await prisma.project.findFirst({
             where: { id: projectId, client: { userId: session.user.id } }
         });
@@ -198,6 +197,8 @@ export async function addProjectStep(projectId: string, title: string) {
         await prisma.projectStep.create({
             data: {
                 title,
+                description,
+                attachmentUrl,
                 projectId,
                 isCompleted: false
             }

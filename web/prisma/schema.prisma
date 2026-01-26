@@ -83,6 +83,9 @@ model Project {
 model ProjectStep {
   id          String    @id @default(cuid())
   title       String
+  description String?   @db.Text
+  attachmentUrl String? 
+  
   isCompleted Boolean   @default(false)
   completedAt DateTime?
   
