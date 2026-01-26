@@ -3,9 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User, Briefcase, Tag } from "lucide-react";
-import { DeleteButton } from "@/components/dashboard/delete-button";
+import { DeleteButton } from "@/components/ui/delete-button";
 import { deleteProject } from "@/app/dashboard/projects/actions";
-import { ChatSheet } from "@/components/chat/chat-sheet";
+
+import { ShareLink } from "@/app/dashboard/projects/share-link";
 import { ProjectSteps } from "@/app/dashboard/projects/project-steps";
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -21,13 +22,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         include: {
             client: true,
             steps: { orderBy: { createdAt: 'asc' } },
-            messages: {
-                orderBy: { createdAt: "asc" },
-                take: 50,
-                include: {
-                    user: { select: { name: true } }
-                }
-            }
+
         }
     });
 
@@ -94,6 +89,10 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                                 <div className="text-sm text-gray-500">{project.client.company || "Pessoa Física"}</div>
                             </div>
 
+                            <div className="pt-2 pb-6 border-b border-gray-100">
+                                <ShareLink projectId={project.id} initialToken={project.shareToken} />
+                            </div>
+
                             <div>
                                 <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
                                     <Calendar size={14} /> Data de Início
@@ -111,24 +110,6 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                                     className="flex-1 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold text-center hover:bg-black transition-colors"
                                 >Editar Projeto</Link>
                                 <DeleteButton id={project.id} itemName={project.name} action={deleteProject} label="Projeto" redirectTo="/dashboard/projects" />
-                            </div>
-
-                            <div className="space-y-3 pt-6 border-t border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Comunicação</h3>
-
-                                <ChatSheet
-                                    projectId={project.id}
-                                    initialMessages={project.messages.map(m => ({
-                                        id: m.id,
-                                        text: m.text,
-                                        userName: m.user?.name ?? "Usuário",
-                                        createdAt: m.createdAt.toISOString()
-                                    }))}
-                                />
-
-                                <p className="text-[10px] text-gray-400 text-center">
-                                    As mensagens são enviadas em tempo real para o cliente.
-                                </p>
                             </div>
                         </div>
                     </div>

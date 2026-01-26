@@ -18,6 +18,7 @@ const AVAILABLE_FIELDS = [
     { id: "paid", label: "Pago" },
     { id: "pending", label: "Pendente" },
     { id: "description", label: "Descrição" },
+    { id: "steps", label: "Etapas do Projeto" },
     { id: "createdAt", label: "Data" },
 ];
 

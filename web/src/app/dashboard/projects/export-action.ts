@@ -9,7 +9,14 @@ export async function getProjectsForExport() {
 
     const projects = await prisma.project.findMany({
         where: { client: { userId: session.user.id } },
-        include: { client: { select: { name: true } }, invoices: true },
+        include: {
+            client: { select: { name: true } },
+            invoices: true,
+            steps: {
+                orderBy: { createdAt: 'asc' },
+                select: { title: true, isCompleted: true, completedAt: true }
+            }
+        },
         orderBy: { createdAt: "desc" }
     });
 
@@ -21,6 +28,7 @@ export async function getProjectsForExport() {
         paidValue: p.invoices.filter(i => i.status === "PAID").reduce((s, i) => s + i.totalAmount, 0),
         pendingValue: p.invoices.filter(i => i.status !== "PAID").reduce((s, i) => s + i.totalAmount, 0),
         createdAt: p.createdAt,
-        description: p.description
+        description: p.description,
+        steps: p.steps // Incluindo os steps no retorno
     }));
 }

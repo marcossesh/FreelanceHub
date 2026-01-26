@@ -18,7 +18,7 @@ export function downloadProjectsPDF(projects: any[], selectedFields: string[]) {
         createdAt: "Data"
     };
 
-    const activeColumns = selectedFields.filter(field => field !== 'description');
+    const activeColumns = selectedFields.filter(field => field !== 'description' && field !== 'steps');
     const headers = activeColumns.map(field => fieldLabels[field] || field);
 
     const tableData: any[] = [];
@@ -43,11 +43,25 @@ export function downloadProjectsPDF(projects: any[], selectedFields: string[]) {
         tableData.push(dataRow);
 
         // Linha de descrição (se selecionada)
+        // Linha de descrição (se selecionada)
         if (selectedFields.includes('description')) {
             tableData.push([{
                 content: `Descrição: ${p.description || 'Sem descrição'}`,
                 colSpan: activeColumns.length,
                 styles: { fontSize: 9, fontStyle: 'italic', textColor: [100, 100, 100], fillColor: [252, 252, 252] }
+            }]);
+        }
+
+        // Linha de Etapas (se selecionada)
+        if (selectedFields.includes('steps') && p.steps && p.steps.length > 0) {
+            const stepsText = p.steps.map((s: any) =>
+                `• ${s.title} (${s.isCompleted ? 'Concluído' : 'Pendente'}${s.completedAt ? ' em ' + new Date(s.completedAt).toLocaleDateString('pt-BR') : ''})`
+            ).join('\n');
+
+            tableData.push([{
+                content: `Etapas do Projeto:\n${stepsText}`,
+                colSpan: activeColumns.length,
+                styles: { fontSize: 8, textColor: [50, 50, 50], fillColor: [248, 250, 252], cellPadding: 3 }
             }]);
         }
     });

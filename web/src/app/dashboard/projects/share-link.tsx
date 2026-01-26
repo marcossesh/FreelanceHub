@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Link as LinkIcon, Check, Copy } from "lucide-react";
+import { Link as LinkIcon, Check, Copy, RefreshCw } from "lucide-react";
 import { generateShareLink } from "./actions";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 export function ShareLink({ projectId, initialToken }: { projectId: string, initialToken?: string | null }) {
     const [token, setToken] = useState(initialToken);
     const [copied, setCopied] = useState(false);
+    const [isRegenerating, setIsRegenerating] = useState(false);
 
     const shareUrl = token ? `${typeof window !== 'undefined' ? window.location.origin : ''}/share/${token}` : null;
 
@@ -15,6 +17,16 @@ export function ShareLink({ projectId, initialToken }: { projectId: string, init
         if (res.success && res.token) {
             setToken(res.token);
         }
+    }
+
+    async function handleRegenerate() {
+        setIsRegenerating(true);
+        const res = await generateShareLink(projectId);
+        if (res.success && res.token) {
+            setToken(res.token);
+            setCopied(false);
+        }
+        setIsRegenerating(false);
     }
 
     function handleCopy() {
@@ -39,19 +51,39 @@ export function ShareLink({ projectId, initialToken }: { projectId: string, init
                     Gerar Link de Acompanhamento
                 </button>
             ) : (
-                <div className="flex gap-2">
-                    <input
-                        readOnly
-                        value={shareUrl || ""}
-                        className="flex-1 text-xs bg-white border border-blue-200 text-gray-600 px-3 rounded-lg focus:outline-none"
-                    />
+                <div className="flex items-center gap-1 w-full">
+                    <div className="relative flex-1">
+                        <input
+                            readOnly
+                            value={shareUrl || ""}
+                            className="w-full text-xs bg-white border border-blue-200 text-gray-600 pl-3 pr-3 py-2 rounded-lg focus:outline-none"
+                        />
+                    </div>
                     <button
                         onClick={handleCopy}
-                        className="p-2 bg-white border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                        className="p-2 bg-white border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0"
                         title="Copiar Link"
                     >
-                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                        {copied ? <Check size={14} /> : <Copy size={14} />}
                     </button>
+
+                    <ConfirmationModal
+                        trigger={
+                            <button
+                                className="p-2 bg-white border border-blue-200 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors flex-shrink-0"
+                                title="Gerar novo link (invalida o atual)"
+                            >
+                                <RefreshCw size={14} />
+                            </button>
+                        }
+                        title="Revogar Link Atual?"
+                        description="Ao gerar um novo link, o link antigo deixará de funcionar imediatamente. O cliente perderá o acesso."
+                        confirmLabel="Gerar Novo Link"
+                        loadingLabel="Gerando..."
+                        isLoading={isRegenerating}
+                        onConfirm={handleRegenerate}
+                        variant="warning"
+                    />
                 </div>
             )}
             <p className="text-[10px] text-blue-400">

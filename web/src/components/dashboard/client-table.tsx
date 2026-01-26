@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, Building2 } from "lucide-react";
-import { DeleteButton } from "./delete-button";
+import { DeleteButton } from "@/components/ui/delete-button";
 import { deleteClient } from "@/app/dashboard/clients/actions";
 
 export function ClientTable({ clients }: { clients: any[] }) {
@@ -54,7 +54,17 @@ export function ClientTable({ clients }: { clients: any[] }) {
                                 >
                                     Editar
                                 </Link>
-                                <DeleteButton id={client.id} itemName={client.name} action={deleteClient} label="Cliente" />
+                                <DeleteButton
+                                    id={client.id}
+                                    itemName={client.name}
+                                    action={deleteClient}
+                                    label="Cliente"
+                                    warningMessage={
+                                        client._count.projects > 0
+                                            ? `Isso apagará também ${client._count.projects} projeto(s) e todas as faturas associadas.`
+                                            : undefined
+                                    }
+                                />
                             </td>
                         </tr>
                     ))}
