@@ -21,6 +21,11 @@ export default async function PublicProjectPage({ params }: { params: Promise<{ 
         return notFound();
     }
 
+    // Check if share link has expired
+    if (project.shareTokenExpiry && project.shareTokenExpiry < new Date()) {
+        return notFound();
+    }
+
     // Cálculos de Progresso
     const totalSteps = project.steps.length;
     const completedSteps = project.steps.filter(s => s.isCompleted).length;

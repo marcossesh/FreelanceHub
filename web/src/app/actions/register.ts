@@ -4,12 +4,14 @@
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
-
+import { VALIDATION_RULES, VALIDATION_MESSAGES } from "@/lib/validation-constants"
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  name: z.string().min(VALIDATION_RULES.NAME.MIN_LENGTH, `Nome deve ter pelo menos ${VALIDATION_RULES.NAME.MIN_LENGTH} caracteres`),
+  email: z.string().email("E-mail inválido").max(VALIDATION_RULES.EMAIL.MAX_LENGTH),
+  password: z.string()
+    .min(VALIDATION_RULES.PASSWORD.MIN_LENGTH, VALIDATION_MESSAGES.PASSWORD.TOO_SHORT)
+    .max(VALIDATION_RULES.PASSWORD.MAX_LENGTH, VALIDATION_MESSAGES.PASSWORD.TOO_LONG),
 })
 
 export async function registerUser(formData: z.infer<typeof registerSchema>) {

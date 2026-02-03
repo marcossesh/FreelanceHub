@@ -69,8 +69,9 @@ model Project {
   clientId    String
   client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
-  shareToken    String?   @unique
-  steps         ProjectStep[]
+  shareToken       String?   @unique
+  shareTokenExpiry DateTime?
+  steps            ProjectStep[]
   // Relação: Um projeto pode ter várias faturas (ex: entrada + entrega)
   invoices    Invoice[]
   
@@ -100,7 +101,8 @@ model ProjectStep {
 
 model Invoice {
   id              String        @id @default(cuid())
-  invoiceNumber   String        @unique // Ex: INV-001
+  invoiceNumber   String        @unique // Ex: INV-000001
+  invoiceSequence Int           @default(autoincrement()) @unique
   status          InvoiceStatus @default(PENDING)
   totalAmount     Float
   dueDate         DateTime
