@@ -14,7 +14,7 @@ export function ShareLink({ projectId, initialToken }: { projectId: string, init
 
     async function handleGenerate() {
         const res = await generateShareLink(projectId);
-        if (res.success && res.token) {
+        if ('success' in res && res.success) {
             setToken(res.token);
         }
     }
@@ -22,7 +22,7 @@ export function ShareLink({ projectId, initialToken }: { projectId: string, init
     async function handleRegenerate() {
         setIsRegenerating(true);
         const res = await generateShareLink(projectId);
-        if (res.success && res.token) {
+        if ('success' in res && res.success) {
             setToken(res.token);
             setCopied(false);
         }
