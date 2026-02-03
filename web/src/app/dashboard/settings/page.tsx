@@ -15,7 +15,7 @@ export default function SettingsPage() {
     const lastUpdateRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (state?.success && state.timestamp !== lastUpdateRef.current) {
+        if (state && 'success' in state && state.success && state.timestamp !== lastUpdateRef.current) {
             lastUpdateRef.current = state.timestamp;
 
             toast.success("Perfil atualizado!");
@@ -25,7 +25,7 @@ export default function SettingsPage() {
             });
         }
 
-        if (state?.error) toast.error(state.error);
+        if (state && 'error' in state && state.error) toast.error(state.error);
     }, [state, update, router]);
 
     return (

@@ -13,12 +13,12 @@ export default function NewClientPage() {
     const [state, formAction, isPending] = useActionState(createClient, null);
 
     useEffect(() => {
-        if (state?.success) {
+        if (state && 'success' in state && state.success) {
             toast.success("Cliente cadastrado com sucesso!");
             setTimeout(() => {
                 router.push("/dashboard/clients");
             }, 1500);
-        } else if (state?.error) {
+        } else if (state && 'error' in state && state.error) {
             toast.error(state.error);
         }
     }, [state, router]);

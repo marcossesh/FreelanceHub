@@ -23,7 +23,7 @@ export default function RegisterPage() {
         try {
             const result = await registerUser({ name, email, password })
 
-            if (result?.error) {
+            if ('error' in result && result.error) {
                 setError(result.error)
                 setLoading(false)
             } else {

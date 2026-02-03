@@ -27,10 +27,10 @@ export function ClientForm({ initialData, action }: ClientFormProps) {
     const router = useRouter();
 
     useEffect(() => {
-        if (state?.success) {
+        if (state && 'success' in state && state.success) {
             toast.success(initialData ? "Cliente atualizado!" : "Cliente cadastrado!");
             router.push("/dashboard/clients");
-        } else if (state?.error) {
+        } else if (state && 'error' in state && state.error) {
             toast.error(state.error);
         }
     }, [state, initialData, router]);
